@@ -6,7 +6,6 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
-	"github.com/EDDYCJY/fake-useragent"
 	"io"
 	"io/ioutil"
 	"math"
@@ -18,8 +17,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/miekg/dns"
+	browser "github.com/EDDYCJY/fake-useragent"
+
 	"net"
+
+	"github.com/miekg/dns"
 
 	URL "net/url"
 
@@ -32,7 +34,7 @@ import (
 
 const (
 	letterIdxBits = 6
-	letterIdxMask = 1 << letterIdxBits - 1
+	letterIdxMask = 1<<letterIdxBits - 1
 	letterIdxMax  = 63 / letterIdxBits
 )
 
@@ -45,7 +47,6 @@ const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 var SpeedQueue = list.New()
 var SpeedIndex uint64 = 0
-
 
 type header struct {
 	key, value string
@@ -131,14 +132,14 @@ func LeastSquares(x []float64, y []float64) (a float64, b float64) {
 func showStat() {
 	initialNetCounter, _ := netstat.IOCounters(true)
 	iplist := ""
-	if customIP !=nil && len(customIP)>0{
+	if len(customIP) > 0 {
 		iplist = customIP.String()
-	}else{
+	} else {
 		u, _ := URL.Parse(*url)
-		iplist = strings.Join(nslookup(u.Hostname(),"8.8.8.8"),",")
+		iplist = strings.Join(nslookup(u.Hostname(), "8.8.8.8"), ",")
 	}
 
-	for true {
+	for {
 		percent, _ := cpu.Percent(time.Second, false)
 		memStat, _ := mem.VirtualMemory()
 		netCounter, _ := netstat.IOCounters(true)
@@ -240,8 +241,8 @@ func goFun(Url string, postContent string, Referer string, XforwardFor bool, cus
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
-	for true {
-		if customIP != nil && len(customIP) > 0 {
+	for {
+		if len(customIP) > 0 {
 			dialer := &net.Dialer{
 				Timeout:   30 * time.Second,
 				KeepAlive: 30 * time.Second,
@@ -276,7 +277,7 @@ func goFun(Url string, postContent string, Referer string, XforwardFor bool, cus
 		var err1 error = nil
 		client := &http.Client{
 			Transport: transport,
-			Timeout: time.Second*10,
+			Timeout:   time.Second * 10,
 		}
 		if len(postContent) > 0 {
 			request, err1 = http.NewRequest("POST", Url, strings.NewReader(postContent))
@@ -298,19 +299,19 @@ func goFun(Url string, postContent string, Referer string, XforwardFor bool, cus
 			request.Header.Add("X-Real-IP", randomip)
 		}
 
-		if len(headers)>0 {
+		if len(headers) > 0 {
 			for _, head := range headers {
 				headKey := head.key
 				headValue := head.value
-				if strings.HasPrefix(head.key,"Random") {
+				if strings.HasPrefix(head.key, "Random") {
 					count, convErr := strconv.Atoi(strings.ReplaceAll(head.value, "Random", ""))
-					if convErr==nil {
+					if convErr == nil {
 						headKey = RandStringBytesMaskImpr(count)
 					}
 				}
-				if strings.HasPrefix(head.value,"Random"){
+				if strings.HasPrefix(head.value, "Random") {
 					count, convErr := strconv.Atoi(strings.ReplaceAll(head.value, "Random", ""))
-					if convErr==nil {
+					if convErr == nil {
 						headValue = RandStringBytesMaskImpr(count)
 					}
 				}
@@ -329,6 +330,7 @@ func goFun(Url string, postContent string, Referer string, XforwardFor bool, cus
 	}
 	wg.Done()
 }
+
 var h = flag.Bool("h", false, "this help")
 var count = flag.Int("c", 16, "concurrent thread for download,default 16")
 var url = flag.String("s", "http://speedtest4.tele2.net/1GB.zip", "target url")
@@ -341,14 +343,14 @@ var headers headersList
 
 func usage() {
 	fmt.Fprintf(os.Stderr,
-`webBenchmark version: /0.6
+		`webBenchmark version: /0.6
 Usage: webBenchmark [-c concurrent] [-s target] [-p] [-r refererUrl] [-f] [-i ip]
 
 Options:
 `)
 	flag.PrintDefaults()
 	fmt.Fprintf(os.Stderr,
-`
+		`
 Advanced Example:
 webBenchmark -c 16 -s https://some.website -r https://referer.url -i 10.0.0.1 -i 10.0.0.2 
 	16 concurrent to benchmark https://some.website with https://referer.url directly to ip 10.0.0.1 and 10.0.0.2
@@ -369,7 +371,7 @@ func main() {
 	}
 	routines := *count
 
-	if customIP != nil && len(customIP) > 0 && routines < len(customIP){
+	if len(customIP) > 0 && routines < len(customIP) {
 		routines = len(customIP)
 	}
 
