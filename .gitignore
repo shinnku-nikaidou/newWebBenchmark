@@ -2,3 +2,4 @@
 bin
 webBenchmark
 webBenchmark.exe
+tmp*
